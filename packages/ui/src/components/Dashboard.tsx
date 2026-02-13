@@ -39,12 +39,12 @@ export function Dashboard() {
         <div className="max-w-screen-2xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-orange-600 p-2 rounded-lg">
+              <div className="bg-blue-600 p-2 rounded-lg">
                 <Activity className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">Clockwork</h1>
-                <p className="text-sm text-slate-400">Node.js Debugging, Profiling & Metrics</p>
+                <p className="text-sm text-slate-400">Node.js dev tools in your browser</p>
               </div>
             </div>
             <nav className="flex rounded-lg bg-slate-700/50 p-1">
@@ -87,10 +87,11 @@ export function Dashboard() {
               {selectedRequestId ? (
                 <RequestDetail requestId={selectedRequestId} />
               ) : (
-                <div className="bg-slate-800 rounded-xl border border-slate-700 h-full flex items-center justify-center">
+                <div className="bg-slate-800 rounded-xl border border-slate-700 h-full flex items-center justify-center min-h-[400px]">
                   <div className="text-center text-slate-400">
-                    <Activity className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <Activity className="w-12 h-12 mx-auto mb-3 opacity-50 text-blue-500" />
                     <p>Select a request to view details</p>
+                    <p className="text-xs mt-2 text-slate-500">Layout inspired by Clockwork (PHP)</p>
                   </div>
                 </div>
               )}

@@ -3,6 +3,15 @@
  * Run: npm run start (from repo root: npm run dev:example)
  * With autoConsole: true (default), console.* is auto-attached to the current request.
  */
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+  process.exit(1);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection:', reason);
+  process.exit(1);
+});
+
 import express from 'express';
 import { startClockwork } from '@adjedaini/clockwork-node';
 
@@ -84,8 +93,8 @@ app.get('/api/slow', async (req, res) => {
   res.json({ message: 'Slow operation completed' });
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+const PORT = Number(process.env.PORT) || 3001;
+const server = app.listen(PORT, () => {
   console.log('\n╔════════════════════════════════════════════════════════════╗');
   console.log('║       Clockwork Example — Node.js Debugging & Metrics       ║');
   console.log('╚════════════════════════════════════════════════════════════╝\n');
@@ -94,4 +103,13 @@ app.listen(PORT, () => {
   console.log(`🎨 App:    http://localhost:${PORT}/__clockwork/app\n`);
   console.log('Try: GET /api/hello  GET /api/users/123  POST /api/users  GET /api/slow');
   console.log('');
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\nPort ${PORT} is already in use. Try: PORT=${PORT + 1} npm run start\n`);
+  } else {
+    console.error('Server error:', err);
+  }
+  process.exit(1);
 });

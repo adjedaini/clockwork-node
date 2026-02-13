@@ -7,11 +7,11 @@ interface RequestDetailProps {
   requestId: string;
 }
 
-type Tab = 'overview' | 'queries' | 'logs' | 'timeline';
+type Tab = 'request' | 'logs' | 'queries' | 'performance';
 
 export function RequestDetail({ requestId }: RequestDetailProps) {
   const [request, setRequest] = useState<RequestData | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [activeTab, setActiveTab] = useState<Tab>('request');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,14 +47,30 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
   }
 
   const tabs = [
-    { id: 'overview' as Tab, label: 'Overview', icon: Info, count: null },
-    { id: 'queries' as Tab, label: 'Database', icon: Database, count: request.databaseQueries?.length || 0 },
+    { id: 'request' as Tab, label: 'Request', icon: Info, count: null },
     { id: 'logs' as Tab, label: 'Log', icon: FileText, count: request.log?.length || 0 },
-    { id: 'timeline' as Tab, label: 'Timeline', icon: Zap, count: request.timelineData?.length || 0 },
+    { id: 'queries' as Tab, label: 'Database', icon: Database, count: request.databaseQueries?.length || 0 },
+    { id: 'performance' as Tab, label: 'Performance', icon: Zap, count: request.timelineData?.length || 0 },
   ];
+
+  const getStatusColor = (status: number) => {
+    if (status >= 200 && status < 300) return 'text-green-400';
+    if (status >= 400 && status < 500) return 'text-yellow-400';
+    if (status >= 500) return 'text-red-400';
+    return 'text-slate-300';
+  };
 
   return (
     <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden flex flex-col h-[calc(100vh-10rem)]">
+      {/* Request summary bar (like Clockwork PHP sidebar) */}
+      <div className="border-b border-slate-700 bg-slate-800/80 px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+        <span className="font-mono font-semibold text-blue-400">{request.method}</span>
+        <span className="text-slate-400 truncate max-w-[200px] sm:max-w-xs" title={request.uri}>{request.uri}</span>
+        <span className={getStatusColor(request.responseStatus)}>{request.responseStatus}</span>
+        <span className="text-slate-400">{request.responseDuration.toFixed(0)}ms</span>
+        <span className="text-slate-500 text-xs">{new Date(request.time * 1000).toLocaleString()}</span>
+        {request.controller && <span className="text-slate-500 text-xs truncate">{request.controller}</span>}
+      </div>
       <div className="border-b border-slate-700">
         <div className="flex gap-1 p-1">
           {tabs.map((tab) => {
@@ -78,16 +94,16 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
         </div>
       </div>
       <div className="flex-1 overflow-y-auto p-6">
-        {activeTab === 'overview' && <OverviewTab request={request} />}
-        {activeTab === 'queries' && <QueriesTab queries={request.databaseQueries || []} />}
+        {activeTab === 'request' && <RequestTab request={request} />}
         {activeTab === 'logs' && <LogsTab logs={request.log || []} />}
-        {activeTab === 'timeline' && <TimelineTab events={request.timelineData || []} />}
+        {activeTab === 'queries' && <QueriesTab queries={request.databaseQueries || []} />}
+        {activeTab === 'performance' && <PerformanceTab events={request.timelineData || []} />}
       </div>
     </div>
   );
 }
 
-function OverviewTab({ request }: { request: RequestData }) {
+function RequestTab({ request }: { request: RequestData }) {
   const formatBytes = (bytes: number) => `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   const InfoRow = ({ label, value }: { label: string; value: unknown }) => (
     <div className="py-3 border-b border-slate-700 last:border-0">
@@ -100,8 +116,8 @@ function OverviewTab({ request }: { request: RequestData }) {
     <div className="space-y-6">
       <div className="bg-slate-900 rounded-lg p-4">
         <div className="flex items-center gap-2 mb-4">
-          <Activity className="w-5 h-5 text-orange-400" />
-          <h3 className="text-lg font-semibold text-white">Request Details</h3>
+          <Activity className="w-5 h-5 text-blue-400" />
+          <h3 className="text-lg font-semibold text-white">Request</h3>
         </div>
         <div>
           <InfoRow label="Method" value={request.method} />
@@ -169,7 +185,7 @@ function QueriesTab({ queries }: { queries: QueryData[] }) {
         <div key={index} className="bg-slate-900 rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Database className="w-4 h-4 text-orange-400" />
+              <Database className="w-4 h-4 text-blue-400" />
               <span className="text-sm font-medium text-white">Query #{index + 1}</span>
             </div>
             <div className="flex items-center gap-3 text-xs text-slate-400">
@@ -244,12 +260,13 @@ function LogsTab({ logs }: { logs: LogData[] }) {
   );
 }
 
-function TimelineTab({ events }: { events: EventData[] }) {
+function PerformanceTab({ events }: { events: EventData[] }) {
   if (events.length === 0) {
     return (
       <div className="text-center text-slate-400 py-12">
-        <Zap className="w-12 h-12 mx-auto mb-3 opacity-50" />
+        <Zap className="w-12 h-12 mx-auto mb-3 opacity-50 text-blue-500" />
         <p>No timeline events recorded</p>
+        <p className="text-xs mt-2 text-slate-500">Add events via core.addEvent() to see a visual timeline</p>
       </div>
     );
   }
@@ -261,8 +278,8 @@ function TimelineTab({ events }: { events: EventData[] }) {
     <div className="space-y-4">
       <div className="bg-slate-900 rounded-lg p-4">
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-orange-400" />
-          Performance Timeline
+          <Clock className="w-5 h-5 text-blue-400" />
+          Performance timeline
         </h3>
         <div className="space-y-3">
           {events.map((event, index) => {
@@ -284,7 +301,7 @@ function TimelineTab({ events }: { events: EventData[] }) {
                       left: `${startPercent}%`,
                       width: `${Math.max(widthPercent, 1)}%`,
                       minWidth: '2px',
-                      backgroundColor: event.color || '#f97316',
+                      backgroundColor: event.color || '#3b82f6',
                     }}
                   >
                     {widthPercent > 10 && (
