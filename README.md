@@ -1,6 +1,6 @@
 # @adjedaini/clockwork-node
 
-Framework-agnostic debugging, profiling, and metrics for Node.js. One middleware: API + optional UI + request capture. No separate services.
+Framework-agnostic debugging, profiling, and metrics for Node.js. One middleware: API + optional UI + request capture. **Automatic capture** (opt-out): `console.*`, uncaught errors, and optionally pg/mysql2 queries are correlated to the current request via AsyncLocalStorage.
 
 ---
 
@@ -21,6 +21,8 @@ import { startClockwork } from '@adjedaini/clockwork-node';
 const clockwork = startClockwork({
   path: '/__clockwork',
   ui: true,
+  autoConsole: true,
+  autoErrors: true,
   captureRequestBody: true,
   captureResponseBody: true,
 });
@@ -30,8 +32,7 @@ app.use(express.json());
 app.use(clockwork.middleware);
 
 app.get('/api/hello', (req, res) => {
-  const id = req.clockworkId;
-  if (id) clockwork.core.captureLog(id, 'info', 'Processing hello');
+  console.log('Processing hello');
   res.json({ message: 'Hello' });
 });
 
@@ -133,11 +134,79 @@ Or in a `.d.ts` file:
 | `path` | `'/__clockwork'` | Base path for API and UI. UI is served at `{path}/app`. |
 | `ui` | `true` | Enable built-in dashboard at `{path}/app`. |
 | `uiPath` | (package dist) | Override UI directory. |
+| `plugins` | — | Full plugin set. When set, autoConsole/autoErrors/autoDb/dbPlugins/autoLogPlugins are ignored. |
+| `autoConsole` | `true` | Intercept `console.*` (used when `plugins` not set). |
+| `autoErrors` | `true` | Capture uncaughtException / unhandledRejection (used when `plugins` not set). |
+| `autoLogPlugins` | `false` | Intercept pino/winston when installed (used when `plugins` not set). |
+| `autoDb` | `false` | Enable default DB plugins pg + mysql2 (used when `plugins` not set). |
+| `dbPlugins` | — | DB plugins when not using full `plugins` (e.g. `[pgPlugin]`). |
 | `captureRequestBody` | `true` | Capture request body. |
 | `captureResponseBody` | `true` | Capture response body. |
 | `ignoreStartsWith` | `[]` | Skip paths that start with these. |
 | `core.maxRequests` | `100` | Ring buffer size. |
 | `core.storage` | (ring buffer) | Custom storage implementing `IRequestStorage`. |
+
+The instance has **registerPlugin(plugin)** to plug in any plugin at runtime, and **restore()** to undo all patches (e.g. for tests or shutdown).
+
+### Generic plugin system
+
+All interception is done via **plugins** implementing `ClockworkPlugin`: `{ name: string, install(ctx: IPluginContext) => () => void }`. Context provides `ctx.core` and `ctx.getRequestId()`.
+
+- **Context plugin** (`contextPlugin`) — provides AsyncLocalStorage and request correlation. Must run first when using defaults.
+- **Console plugin** (`consolePlugin`) — intercepts `console.*` (native log).
+- **Process errors plugin** (`processErrorsPlugin`) — captures uncaughtException / unhandledRejection.
+- **Log plugins** (`pinoPlugin`, `winstonPlugin`) — intercept pino/winston when installed. Enable with `autoLogPlugins: true` or add to `plugins`.
+- **DB plugins** (`pgPlugin`, `mysql2Plugin`) — intercept pg/mysql2 queries. Enable with `autoDb: true` or `dbPlugins: [pgPlugin]`.
+
+Use the **full plugin list** or the **default builder**:
+
+```javascript
+import {
+  startClockwork,
+  contextPlugin,
+  consolePlugin,
+  processErrorsPlugin,
+  pinoPlugin,
+  winstonPlugin,
+  pgPlugin,
+  mysql2Plugin,
+  getDefaultPlugins,
+} from '@adjedaini/clockwork-node';
+
+// Option 1: defaults (context + console + processErrors; optional DB / log libs)
+const clockwork = startClockwork({
+  autoConsole: true,
+  autoErrors: true,
+  autoLogPlugins: true,
+  autoDb: true,
+});
+
+// Option 2: custom plugin set (you must include contextPlugin first for request correlation)
+const clockwork = startClockwork({
+  plugins: [
+    contextPlugin,
+    consolePlugin,
+    processErrorsPlugin,
+    pinoPlugin,
+    pgPlugin,
+  ],
+});
+
+// Option 3: build defaults then add more
+const plugins = getDefaultPlugins({
+  console: true,
+  errors: true,
+  logPlugins: true,
+  db: true,
+  dbPlugins: [pgPlugin],
+});
+const clockwork = startClockwork({ plugins });
+
+// Option 4: plug in at runtime
+const clockwork = startClockwork();
+clockwork.registerPlugin(pinoPlugin);
+clockwork.registerPlugin(pgPlugin);
+```
 
 **API:** `GET {path}`, `GET {path}/:id`, `GET {path}/latest`, `GET {path}/metrics`.
 
@@ -145,11 +214,8 @@ Or in a `.d.ts` file:
 
 ---
 
-## Monorepo
-
-Only **@adjedaini/clockwork-node** (root) is published. Internal packages are `private: true`. See [docs/PACKAGE_BOUNDARIES.md](docs/PACKAGE_BOUNDARIES.md).
-
 - **Build:** `npm run build` → packages → UI → root bundle → copy UI to `dist/public`.
+- **Packages:** Plugins live under `packages/`: `clockwork-plugins` (context, console, process-errors, getDefaultPlugins), `clockwork-log-interceptor` (pino, winston), `clockwork-db-interceptor` (pg, mysql2). Root depends on `clockwork-plugins`, which aggregates the others.
 - **Scripts:** `build`, `dev:example`, `dev:ui`, `test`, `clean`, `version` (changesets), `release`.
 
 ---

@@ -1,5 +1,10 @@
 /** Shared types for @adjedaini/clockwork-node. Framework-agnostic. */
 
+/** Per-request context (AsyncLocalStorage). Used to correlate logs/queries to the current request. */
+export interface ClockworkContext {
+  requestId: string;
+}
+
 export interface LogData {
   level: 'debug' | 'info' | 'warning' | 'error';
   message: string;

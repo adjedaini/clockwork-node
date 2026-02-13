@@ -10,5 +10,8 @@ export default defineConfig({
     '@adjedaini/clockwork-core',
     '@adjedaini/clockwork-transport-http',
     '@adjedaini/clockwork-shared',
+    '@adjedaini/clockwork-plugins',
+    '@adjedaini/clockwork-db-interceptor',
+    '@adjedaini/clockwork-log-interceptor',
   ],
 });

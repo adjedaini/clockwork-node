@@ -1,6 +1,7 @@
 /**
  * Example Express app using startClockwork().
  * Run: npm run start (from repo root: npm run dev:example)
+ * With autoConsole: true (default), console.* is auto-attached to the current request.
  */
 import express from 'express';
 import { startClockwork } from '@adjedaini/clockwork-node';
@@ -8,6 +9,9 @@ import { startClockwork } from '@adjedaini/clockwork-node';
 const clockwork = startClockwork({
   path: '/__clockwork',
   ui: true,
+  autoConsole: true,
+  autoErrors: true,
+  autoDb: false,
   captureRequestBody: true,
   captureResponseBody: true,
   ignoreStartsWith: ['/admin'],
@@ -16,10 +20,9 @@ const clockwork = startClockwork({
 const app = express();
 app.use(express.json());
 
-// Clockwork: API + UI + request capture (one middleware)
+// Clockwork: API + UI + request capture. Request context is set so console.* and errors correlate.
 app.use(clockwork.middleware);
 
-// Helper: get request id set by middleware (for logging to the right request)
 function getRequestId(req) {
   return req.clockworkId ?? null;
 }
@@ -30,7 +33,7 @@ function log(req, level, message, context) {
 }
 
 app.get('/api/hello', (req, res) => {
-  log(req, 'info', 'Processing hello request');
+  console.log('Processing hello request');
   log(req, 'debug', 'Debug information', { user: 'test' });
   const greeting = { message: 'Hello from Clockwork Node!', timestamp: new Date().toISOString() };
   res.json(greeting);

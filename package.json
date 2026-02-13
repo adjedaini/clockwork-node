@@ -33,7 +33,8 @@
   "dependencies": {
     "@adjedaini/clockwork-core": "*",
     "@adjedaini/clockwork-transport-http": "*",
-    "@adjedaini/clockwork-shared": "*"
+    "@adjedaini/clockwork-shared": "*",
+    "@adjedaini/clockwork-plugins": "*"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",

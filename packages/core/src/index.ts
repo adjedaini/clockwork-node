@@ -17,6 +17,18 @@ import { RequestRingBuffer } from './ring-buffer';
 
 export type { RequestSnapshot, RequestMetadata, Snapshot, CoreConfig, IRequestStorage } from '@adjedaini/clockwork-shared';
 
+/** Context passed to every plugin. getRequestId() returns current request id when inside middleware. */
+export interface IPluginContext {
+  core: MonitorCore;
+  getRequestId(): string | undefined;
+}
+
+/** Generic plugin: install patches and return a restore function. */
+export interface ClockworkPlugin {
+  name: string;
+  install(ctx: IPluginContext): () => void;
+}
+
 const DEFAULT_MAX_REQUESTS = 100;
 
 export class MonitorCore {
@@ -104,6 +116,16 @@ export class MonitorCore {
       time: timeOffset ?? (Date.now() - startTime) / 1000,
       source: 'native',
     });
+  }
+
+  /** Capture an error. If requestId is set, also attach to that request's log. */
+  captureError(error: unknown, requestId?: string): void {
+    const message = error instanceof Error ? error.message : String(error);
+    const context = error instanceof Error ? { name: error.name, stack: error.stack } : undefined;
+    if (requestId) {
+      this.captureLog(requestId, 'error', message, context as Record<string, unknown>);
+    }
+    // Global errors could be stored in a ring buffer here for getSnapshot(); optional for later.
   }
 
   /** Add a query to a request. */

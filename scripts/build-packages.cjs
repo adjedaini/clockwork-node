@@ -8,7 +8,7 @@ const path = require('path');
 const fs = require('fs');
 
 const rootDir = path.resolve(__dirname, '..');
-const packages = ['shared', 'core', 'transport-http'];
+const packages = ['shared', 'core', 'transport-http', 'db-interceptor', 'log-interceptor', 'plugins'];
 
 for (const name of packages) {
   const dir = path.join(rootDir, 'packages', name);

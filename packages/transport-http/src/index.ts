@@ -14,9 +14,13 @@ import { sanitizeHeaders, sanitizeBody } from './sanitize';
 
 export type { ClockworkRequestLike, ClockworkResponseLike, NextLike } from './types.js';
 
+export type ContextRunner = (requestId: string, next: NextLike) => void;
+
 export interface HttpAdapterOptions {
   /** Base path for API and UI (e.g. "/__clockwork"). No trailing slash. */
   path?: string;
+  /** Run the rest of the request (next) inside this context (e.g. AsyncLocalStorage.run). Enables per-request correlation. */
+  contextRunner?: ContextRunner;
   /** Max request list returned by snapshot. */
   snapshotLimit?: number;
   /** Redact these keys in headers/body. */
@@ -73,6 +77,7 @@ export function createHttpAdapter(
   options: HttpAdapterOptions = {}
 ): HttpAdapter {
   const pathPrefix = getPathPrefix(options.path ?? DEFAULT_PATH);
+  const contextRunner = options.contextRunner;
   const snapshotLimit = options.snapshotLimit ?? 50;
   const redactKeys = options.redactKeys ?? DEFAULT_REDACT_KEYS;
   const maxBodySize = options.maxBodySize ?? 10000;
@@ -261,7 +266,11 @@ export function createHttpAdapter(
     });
 
     (req as { clockworkId?: string }).clockworkId = requestId;
-    next();
+    if (contextRunner) {
+      contextRunner(requestId, next);
+    } else {
+      next();
+    }
   };
 
   return { middleware, dataHandler };
