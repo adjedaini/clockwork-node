@@ -74,8 +74,18 @@ export interface Snapshot {
   };
 }
 
+/** Storage backend for request snapshots. Implement for Redis, SQLite, file, etc. */
+export interface IRequestStorage {
+  push(id: string, request: RequestSnapshot): void;
+  get(id: string): RequestSnapshot | undefined;
+  getAll(limit: number): RequestSnapshot[];
+  getLatest(): RequestSnapshot | undefined;
+}
+
 export interface CoreConfig {
   maxRequests?: number;
   maxBodyDepth?: number;
   maxBodySize?: number;
+  /** Custom storage backend. Default: in-memory ring buffer. */
+  storage?: IRequestStorage;
 }

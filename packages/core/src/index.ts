@@ -11,15 +11,16 @@ import type {
   EventData,
   Snapshot,
   CoreConfig,
+  IRequestStorage,
 } from '@adjedaini/clockwork-shared';
 import { RequestRingBuffer } from './ring-buffer';
 
-export type { RequestSnapshot, RequestMetadata, Snapshot, CoreConfig } from '@adjedaini/clockwork-shared';
+export type { RequestSnapshot, RequestMetadata, Snapshot, CoreConfig, IRequestStorage } from '@adjedaini/clockwork-shared';
 
 const DEFAULT_MAX_REQUESTS = 100;
 
 export class MonitorCore {
-  private buffer: RequestRingBuffer;
+  private buffer: IRequestStorage;
   private current: Map<string, RequestSnapshot> = new Map();
   private startedAt: number = 0;
   private config: Required<Pick<CoreConfig, 'maxRequests'>>;
@@ -28,7 +29,7 @@ export class MonitorCore {
     this.config = {
       maxRequests: config.maxRequests ?? DEFAULT_MAX_REQUESTS,
     };
-    this.buffer = new RequestRingBuffer(this.config.maxRequests);
+    this.buffer = config.storage ?? new RequestRingBuffer(this.config.maxRequests);
   }
 
   /** Start the monitor (call once at bootstrap). */

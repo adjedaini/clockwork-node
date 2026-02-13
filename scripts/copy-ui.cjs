@@ -30,4 +30,9 @@ if (!fs.existsSync(path.join(rootDir, 'dist'))) {
 }
 
 copyRecursive(uiDist, publicDir);
+const globalsSrc = path.join(rootDir, 'src', 'globals.d.ts');
+const globalsDest = path.join(rootDir, 'dist', 'globals.d.ts');
+if (fs.existsSync(globalsSrc)) {
+  fs.copyFileSync(globalsSrc, globalsDest);
+}
 console.log('Clockwork: copied UI to dist/public');

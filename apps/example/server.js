@@ -1,11 +1,11 @@
 /**
- * Example Express app using createClockwork().
+ * Example Express app using startClockwork().
  * Run: npm run start (from repo root: npm run dev:example)
  */
 import express from 'express';
-import { createClockwork } from '@adjedaini/clockwork-node';
+import { startClockwork } from '@adjedaini/clockwork-node';
 
-const clockwork = createClockwork({
+const clockwork = startClockwork({
   path: '/__clockwork',
   ui: true,
   captureRequestBody: true,
@@ -21,7 +21,7 @@ app.use(clockwork.middleware);
 
 // Helper: get request id set by middleware (for logging to the right request)
 function getRequestId(req) {
-  return req._clockworkId ?? null;
+  return req.clockworkId ?? null;
 }
 
 function log(req, level, message, context) {

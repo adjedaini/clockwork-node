@@ -260,7 +260,7 @@ export function createHttpAdapter(
       });
     });
 
-    (req as { _clockworkId?: string })._clockworkId = requestId;
+    (req as { clockworkId?: string }).clockworkId = requestId;
     next();
   };
 

@@ -1,11 +1,11 @@
 /**
- * Ring buffer for request storage. Evicts oldest when at capacity.
- * Framework-agnostic.
+ * In-memory ring buffer for request storage. Evicts oldest when at capacity.
+ * Implements IRequestStorage for pluggable backends.
  */
 
-import type { RequestSnapshot } from '@adjedaini/clockwork-shared';
+import type { RequestSnapshot, IRequestStorage } from '@adjedaini/clockwork-shared';
 
-export class RequestRingBuffer {
+export class RequestRingBuffer implements IRequestStorage {
   private buffer: Map<string, RequestSnapshot> = new Map();
   private order: string[] = [];
   private readonly capacity: number;

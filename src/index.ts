@@ -1,6 +1,6 @@
 /**
  * @adjedaini/clockwork-node
- * Public API: createClockwork(options) -> { core, middleware, handler, uiPath }
+ * Public API: startClockwork(options) -> { core, middleware, handler, uiPath }
  */
 
 import { MonitorCore } from '@adjedaini/clockwork-core';
@@ -18,7 +18,7 @@ export type { HttpAdapterOptions, ClockworkRequestLike, ClockworkResponseLike } 
 
 const DEFAULT_PATH = '/__clockwork';
 
-export interface CreateClockworkOptions extends HttpAdapterOptions {
+export interface startClockworkOptions extends HttpAdapterOptions {
   /** Core config (e.g. maxRequests). */
   core?: CoreConfig;
   /** Enable built-in UI at path + /app. Default true. */
@@ -45,7 +45,7 @@ function getPathPrefix(p: string): string {
 /**
  * Create a Clockwork instance. Use middleware in your app; it serves the API, optional UI, and captures requests.
  */
-export function createClockwork(options: CreateClockworkOptions = {}): ClockworkInstance {
+export function startClockwork(options: startClockworkOptions = {}): ClockworkInstance {
   const coreConfig = options.core ?? {};
   const core = new MonitorCore(coreConfig);
   core.start();
@@ -84,7 +84,7 @@ export function createClockwork(options: CreateClockworkOptions = {}): Clockwork
 }
 
 export default {
-  createClockwork,
+  startClockwork,
   MonitorCore,
   createHttpAdapter,
 };
