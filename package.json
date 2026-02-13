@@ -6,7 +6,9 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -15,7 +17,11 @@
     },
     "./globals": "./dist/globals.d.ts"
   },
-  "workspaces": [".", "packages/*", "apps/*"],
+  "workspaces": [
+    ".",
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "build": "npm run build:packages && npm run build:ui && npm run build:root && npm run build:copy-ui",
     "build:packages": "node scripts/build-packages.cjs",
@@ -28,13 +34,16 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "version": "changeset version",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@adjedaini/clockwork-core": "*",
     "@adjedaini/clockwork-transport-http": "*",
     "@adjedaini/clockwork-shared": "*",
-    "@adjedaini/clockwork-plugins": "*"
+    "@adjedaini/clockwork-plugins": "*",
+    "@adjedaini/clockwork-db-interceptor": "*",
+    "@adjedaini/clockwork-log-interceptor": "*"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",
@@ -42,7 +51,19 @@
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"
   },
-  "engines": { "node": ">=18.0.0" },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "license": "MIT",
-  "publishConfig": { "access": "public" }
+  "publishConfig": {
+    "access": "public"
+  },
+  "bundledDependencies": [
+    "@adjedaini/clockwork-core",
+    "@adjedaini/clockwork-transport-http",
+    "@adjedaini/clockwork-shared",
+    "@adjedaini/clockwork-plugins",
+    "@adjedaini/clockwork-db-interceptor",
+    "@adjedaini/clockwork-log-interceptor"
+  ]
 }
