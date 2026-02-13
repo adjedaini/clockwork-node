@@ -1,0 +1,33 @@
+{
+  "name": "@adjedaini/clockwork-node",
+  "version": "0.0.1",
+  "description": "Clockwork Node — framework-agnostic debugging, profiling & metrics for Node.js backends",
+  "private": false,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "workspaces": [".", "packages/*", "apps/*"],
+  "scripts": {
+    "build": "npm run build:packages && npm run build:ui && npm run build:root && npm run build:copy-ui",
+    "build:packages": "npm run build -w @adjedaini/clockwork-shared && npm run build -w @adjedaini/clockwork-core && npm run build -w @adjedaini/clockwork-transport-http",
+    "build:ui": "npm run build -w @adjedaini/clockwork-ui",
+    "build:root": "tsup",
+    "build:copy-ui": "node scripts/copy-ui.cjs",
+    "dev:ui": "npm run dev -w @adjedaini/clockwork-ui",
+    "dev:example": "npm run start -w example",
+    "clean": "rm -rf dist packages/*/dist; true",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "@adjedaini/clockwork-core": "*",
+    "@adjedaini/clockwork-transport-http": "*",
+    "@adjedaini/clockwork-shared": "*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": { "node": ">=18.0.0" },
+  "license": "MIT"
+}
