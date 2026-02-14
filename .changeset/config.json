@@ -6,6 +6,5 @@
   "linked": [],
   "access": "public",
   "baseBranch": "main",
-  "updateInternalDependencies": "patch",
-  "ignore": ["@adjedaini/clockwork-shared", "@adjedaini/clockwork-core", "@adjedaini/clockwork-transport-http", "@adjedaini/clockwork-ui"]
+  "updateInternalDependencies": "patch"
 }
