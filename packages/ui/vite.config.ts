@@ -5,8 +5,11 @@ import react from '@vitejs/plugin-react';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const clockworkPath = (process.env.VITE_CLOCKWORK_PATH ?? '/__clockwork').replace(/\/$/, '') || '/__clockwork';
+const clockworkPathEscaped = clockworkPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 export default defineConfig({
-  base: process.env.VITE_CLOCKWORK_BASE ?? '/__clockwork/app/',
+  base: `${clockworkPath}/app/`,
   build: {
     outDir: path.join(__dirname, 'dist'),
     emptyOutDir: true,
@@ -15,11 +18,12 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  // only on dev mode
   server: {
     port: 5174,
     proxy: {
-      '^/__clockwork$': { target: 'http://localhost:3001', changeOrigin: true },
-      '^/__clockwork/(?!app)': { target: 'http://localhost:3001', changeOrigin: true },
+      [`^${clockworkPathEscaped}$`]: { target: 'http://localhost:3001', changeOrigin: true },
+      [`^${clockworkPathEscaped}/(?!app)`]: { target: 'http://localhost:3001', changeOrigin: true },
     },
   },
 });

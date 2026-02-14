@@ -1,3 +1,96 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Clockwork (PHP) style – dark (default) */
+:root,
+[data-theme="dark"] {
+  --cw-bg: #1e1e1e;
+  --cw-panel: #1b1b1b;
+  --cw-border: hsl(240deg 17% 20%);
+  --cw-text: rgb(178, 178, 178);
+  --cw-text-muted: rgb(118, 118, 118);
+  --cw-accent: hsl(31deg 98% 48%);
+  --cw-selected: hsl(31deg 98% 42%);
+  --cw-status-ok-bg: hsl(76deg 100% 11%);
+  --cw-status-ok-text: hsl(75deg 90% 80%);
+  --cw-status-4xx-bg: #382f00;
+  --cw-status-4xx-text: #fad89f;
+  --cw-status-5xx-bg: #380000;
+  --cw-status-5xx-text: #ed797a;
+  --cw-type-badge-bg: hsl(206deg 100% 16%);
+  --cw-type-badge-text: hsl(205deg 90% 70%);
+  --cw-details-header-h: 34px;
+  --cw-font-size: 11px;
+  --cw-input-bg: #3f3e3d;
+  --cw-input-text: #e9e9e9;
+  --cw-input-placeholder: #a7a6a5;
+  --cw-panel-shadow: none;
+  --cw-code-bg: #252527;
+  --cw-code-border: #15151e;
+}
+
+/* Light theme – enhanced contrast and polish */
+[data-theme="light"] {
+  --cw-bg: #f8f9fa;
+  --cw-panel: #ffffff;
+  --cw-border: hsl(220deg 14% 90%);
+  --cw-text: hsl(220deg 15% 18%);
+  --cw-text-muted: hsl(220deg 10% 42%);
+  --cw-accent: hsl(25deg 95% 45%);
+  --cw-selected: hsl(25deg 90% 52%);
+  --cw-status-ok-bg: hsl(100deg 40% 92%);
+  --cw-status-ok-text: hsl(100deg 50% 28%);
+  --cw-status-4xx-bg: hsl(45deg 90% 94%);
+  --cw-status-4xx-text: hsl(35deg 75% 35%);
+  --cw-status-5xx-bg: hsl(0deg 60% 96%);
+  --cw-status-5xx-text: hsl(0deg 65% 42%);
+  --cw-type-badge-bg: hsl(210deg 50% 92%);
+  --cw-type-badge-text: hsl(210deg 60% 28%);
+  --cw-input-bg: hsl(220deg 14% 96%);
+  --cw-input-text: hsl(220deg 15% 18%);
+  --cw-input-placeholder: hsl(220deg 10% 55%);
+  --cw-panel-shadow: 0 1px 2px hsl(220deg 10% 92%);
+  --cw-code-bg: hsl(220deg 14% 94%);
+  --cw-code-border: hsl(220deg 14% 82%);
+}
+
+html {
+  font-size: var(--cw-font-size);
+  height: 100%;
+}
+
+body {
+  background: var(--cw-bg);
+  color: var(--cw-text);
+  height: 100%;
+  margin: 0;
+}
+
+/* Split layout – custom resize handles */
+.cw-split {
+  display: flex;
+  flex-direction: row;
+}
+.cw-split-panel {
+  border-right: 1px solid var(--cw-border);
+  box-shadow: var(--cw-panel-shadow);
+  flex-shrink: 0;
+}
+.cw-split-details {
+  flex: 1 1 0;
+  overflow: hidden;
+}
+.cw-resize-handle {
+  width: 6px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  background: var(--cw-border);
+  transition: background 0.15s;
+}
+.cw-resize-handle:hover {
+  background: var(--cw-accent);
+}
+.cw-resize-handle:active {
+  background: var(--cw-accent);
+}

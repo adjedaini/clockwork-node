@@ -7,7 +7,7 @@ interface RequestDetailProps {
   requestId: string;
 }
 
-type Tab = 'request' | 'logs' | 'queries' | 'performance';
+type Tab = 'request' | 'logs' | 'queries' | 'timeline';
 
 export function RequestDetail({ requestId }: RequestDetailProps) {
   const [request, setRequest] = useState<RequestData | null>(null);
@@ -32,16 +32,16 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
 
   if (loading) {
     return (
-      <div className="bg-slate-800 rounded-xl border border-slate-700 p-8 flex items-center justify-center">
-        <div className="text-slate-400">Loading...</div>
+      <div className="flex h-full items-center justify-center bg-[var(--cw-bg)]">
+        <div className="text-[var(--cw-text-muted)]">Loading...</div>
       </div>
     );
   }
 
   if (!request) {
     return (
-      <div className="bg-slate-800 rounded-xl border border-slate-700 p-8 flex items-center justify-center">
-        <div className="text-slate-400">Request not found</div>
+      <div className="flex h-full items-center justify-center bg-[var(--cw-bg)]">
+        <div className="text-[var(--cw-text-muted)]">Request not found</div>
       </div>
     );
   }
@@ -50,54 +50,43 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
     { id: 'request' as Tab, label: 'Request', icon: Info, count: null },
     { id: 'logs' as Tab, label: 'Log', icon: FileText, count: request.log?.length || 0 },
     { id: 'queries' as Tab, label: 'Database', icon: Database, count: request.databaseQueries?.length || 0 },
-    { id: 'performance' as Tab, label: 'Performance', icon: Zap, count: request.timelineData?.length || 0 },
+    { id: 'timeline' as Tab, label: 'Timeline', icon: Zap, count: request.timelineData?.length || 0 },
   ];
 
-  const getStatusColor = (status: number) => {
-    if (status >= 200 && status < 300) return 'text-green-400';
-    if (status >= 400 && status < 500) return 'text-yellow-400';
-    if (status >= 500) return 'text-red-400';
-    return 'text-slate-300';
-  };
-
   return (
-    <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden flex flex-col h-[calc(100vh-10rem)]">
-      {/* Request summary bar (like Clockwork PHP sidebar) */}
-      <div className="border-b border-slate-700 bg-slate-800/80 px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-        <span className="font-mono font-semibold text-blue-400">{request.method}</span>
-        <span className="text-slate-400 truncate max-w-[200px] sm:max-w-xs" title={request.uri}>{request.uri}</span>
-        <span className={getStatusColor(request.responseStatus)}>{request.responseStatus}</span>
-        <span className="text-slate-400">{request.responseDuration.toFixed(0)}ms</span>
-        <span className="text-slate-500 text-xs">{new Date(request.time * 1000).toLocaleString()}</span>
-        {request.controller && <span className="text-slate-500 text-xs truncate">{request.controller}</span>}
-      </div>
-      <div className="border-b border-slate-700">
-        <div className="flex gap-1 p-1">
+    <div className="details-pane flex h-full min-h-0 flex-col bg-[var(--cw-bg)]">
+      {/* Clockwork-style details header – 34px tabs */}
+      <div
+        className="details-header flex h-[var(--cw-details-header-h)] flex-shrink-0 items-center border-b border-[var(--cw-border)] bg-[var(--cw-panel)] px-1"
+        style={{ minHeight: 34 }}
+      >
+        <div className="details-header-tabs flex flex-1 gap-0 overflow-hidden">
           {tabs.map((tab) => {
             const Icon = tab.icon;
+            const active = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-colors ${
-                  activeTab === tab.id ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                className={`flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm transition-colors ${
+                  active ? 'text-[var(--cw-accent)]' : 'text-[var(--cw-text-muted)] hover:text-[var(--cw-accent)]'
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{tab.label}</span>
                 {tab.count !== null && tab.count > 0 && (
-                  <span className="bg-slate-600 px-2 py-0.5 rounded-full text-xs">{tab.count}</span>
+                  <span className="rounded bg-[var(--cw-border)] px-1.5 py-0.5 text-xs">{tab.count}</span>
                 )}
               </button>
             );
           })}
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="details-content flex-1 overflow-auto p-4">
         {activeTab === 'request' && <RequestTab request={request} />}
         {activeTab === 'logs' && <LogsTab logs={request.log || []} />}
         {activeTab === 'queries' && <QueriesTab queries={request.databaseQueries || []} />}
-        {activeTab === 'performance' && <PerformanceTab events={request.timelineData || []} />}
+        {activeTab === 'timeline' && <TimelineTab events={request.timelineData || []} />}
       </div>
     </div>
   );
@@ -106,18 +95,18 @@ export function RequestDetail({ requestId }: RequestDetailProps) {
 function RequestTab({ request }: { request: RequestData }) {
   const formatBytes = (bytes: number) => `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   const InfoRow = ({ label, value }: { label: string; value: unknown }) => (
-    <div className="py-3 border-b border-slate-700 last:border-0">
-      <div className="text-sm text-slate-400 mb-1">{label}</div>
-      <div className="text-white font-mono text-sm break-all">{value ?? 'N/A'}</div>
+    <div className="border-b border-[var(--cw-border)] py-3 last:border-0">
+      <div className="mb-1 text-sm text-[var(--cw-text-muted)]">{label}</div>
+      <div className="break-all font-mono text-sm text-[var(--cw-text)]">{value ?? 'N/A'}</div>
     </div>
   );
 
   return (
-    <div className="space-y-6">
-      <div className="bg-slate-900 rounded-lg p-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Activity className="w-5 h-5 text-blue-400" />
-          <h3 className="text-lg font-semibold text-white">Request</h3>
+    <div className="space-y-4">
+      <div className="rounded-lg bg-[var(--cw-panel)] p-4">
+        <div className="mb-4 flex items-center gap-2">
+          <Activity className="h-5 w-5 text-[var(--cw-accent)]" />
+          <h3 className="text-[13px] font-semibold text-[var(--cw-text)]">Request</h3>
         </div>
         <div>
           <InfoRow label="Method" value={request.method} />
@@ -130,25 +119,25 @@ function RequestTab({ request }: { request: RequestData }) {
         </div>
       </div>
       {request.getData && Object.keys(request.getData).length > 0 && (
-        <div className="bg-slate-900 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Query Parameters</h3>
-          <pre className="bg-slate-950 p-3 rounded-lg text-sm text-slate-300 overflow-x-auto">
+        <div className="rounded-lg bg-[var(--cw-panel)] p-4">
+          <h3 className="mb-3 text-[13px] font-semibold text-[var(--cw-text)]">Query Parameters</h3>
+          <pre className="overflow-x-auto rounded border border-[var(--cw-code-border)] bg-[var(--cw-code-bg)] p-3 text-sm text-[var(--cw-text)]">
             {JSON.stringify(request.getData, null, 2)}
           </pre>
         </div>
       )}
       {request.postData && (
-        <div className="bg-slate-900 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Request Body</h3>
-          <pre className="bg-slate-950 p-3 rounded-lg text-sm text-slate-300 overflow-x-auto">
+        <div className="rounded-lg bg-[var(--cw-panel)] p-4">
+          <h3 className="mb-3 text-[13px] font-semibold text-[var(--cw-text)]">Request Body</h3>
+          <pre className="overflow-x-auto rounded border border-[var(--cw-code-border)] bg-[var(--cw-code-bg)] p-3 text-sm text-[var(--cw-text)]">
             {JSON.stringify(request.postData, null, 2)}
           </pre>
         </div>
       )}
       {request.headers && Object.keys(request.headers).length > 0 && (
-        <div className="bg-slate-900 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Headers</h3>
-          <pre className="bg-slate-950 p-3 rounded-lg text-sm text-slate-300 overflow-x-auto">
+        <div className="rounded-lg bg-[var(--cw-panel)] p-4">
+          <h3 className="mb-3 text-[13px] font-semibold text-[var(--cw-text)]">Headers</h3>
+          <pre className="overflow-x-auto rounded border border-[var(--cw-code-border)] bg-[var(--cw-code-bg)] p-3 text-sm text-[var(--cw-text)]">
             {JSON.stringify(request.headers, null, 2)}
           </pre>
         </div>
@@ -160,8 +149,8 @@ function RequestTab({ request }: { request: RequestData }) {
 function QueriesTab({ queries }: { queries: QueryData[] }) {
   if (queries.length === 0) {
     return (
-      <div className="text-center text-slate-400 py-12">
-        <Database className="w-12 h-12 mx-auto mb-3 opacity-50" />
+      <div className="py-12 text-center text-[var(--cw-text-muted)]">
+        <Database className="mx-auto mb-3 h-12 w-12 opacity-50" />
         <p>No database queries recorded</p>
       </div>
     );
@@ -169,40 +158,38 @@ function QueriesTab({ queries }: { queries: QueryData[] }) {
   const totalDuration = queries.reduce((sum, q) => sum + (q.duration || 0), 0);
   return (
     <div className="space-y-4">
-      <div className="bg-slate-900 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm text-slate-400">Total Queries</div>
-            <div className="text-2xl font-bold text-white">{queries.length}</div>
-          </div>
-          <div>
-            <div className="text-sm text-slate-400">Total Duration</div>
-            <div className="text-2xl font-bold text-white">{totalDuration.toFixed(2)}ms</div>
-          </div>
+      <div className="counters-row flex items-center justify-between rounded-lg border border-[var(--cw-code-border)] bg-[var(--cw-code-bg)] p-4">
+        <div>
+          <div className="text-[95%] uppercase text-[var(--cw-text-muted)]">Total Queries</div>
+          <div className="text-[170%] font-bold text-[var(--cw-accent)]">{queries.length}</div>
+        </div>
+        <div>
+          <div className="text-[95%] uppercase text-[var(--cw-text-muted)]">Total Duration</div>
+          <div className="text-[170%] font-bold text-[var(--cw-accent)]">{totalDuration.toFixed(2)}ms</div>
         </div>
       </div>
       {queries.map((query, index) => (
-        <div key={index} className="bg-slate-900 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-3">
+        <div key={index} className="rounded-lg bg-[var(--cw-panel)] p-4">
+          <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Database className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-medium text-white">Query #{index + 1}</span>
+              <Database className="h-4 w-4 text-[var(--cw-accent)]" />
+              <span className="text-sm font-medium text-[var(--cw-text)]">Query #{index + 1}</span>
             </div>
-            <div className="flex items-center gap-3 text-xs text-slate-400">
+            <div className="flex items-center gap-3 text-xs text-[var(--cw-text-muted)]">
               <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
+                <Clock className="h-3 w-3" />
                 {query.duration?.toFixed(2)}ms
               </span>
-              <span className="bg-slate-700 px-2 py-1 rounded">{query.connection || 'default'}</span>
+              <span className="rounded bg-[var(--cw-border)] px-2 py-1">{query.connection || 'default'}</span>
             </div>
           </div>
-          <pre className="bg-slate-950 p-3 rounded-lg text-sm text-slate-300 overflow-x-auto mb-3">
+          <pre className="mb-3 overflow-x-auto rounded border border-[var(--cw-code-border)] bg-[var(--cw-code-bg)] p-3 text-sm text-[var(--cw-text)]">
             {query.query}
           </pre>
           {query.bindings && query.bindings.length > 0 && (
             <div>
-              <div className="text-xs text-slate-400 mb-2">Bindings:</div>
-              <pre className="bg-slate-950 p-3 rounded-lg text-sm text-slate-300 overflow-x-auto">
+              <div className="mb-2 text-xs text-[var(--cw-text-muted)]">Bindings:</div>
+              <pre className="overflow-x-auto rounded border border-[var(--cw-code-border)] bg-[var(--cw-code-bg)] p-3 text-sm text-[var(--cw-text)]">
                 {JSON.stringify(query.bindings, null, 2)}
               </pre>
             </div>
@@ -216,8 +203,8 @@ function QueriesTab({ queries }: { queries: QueryData[] }) {
 function LogsTab({ logs }: { logs: LogData[] }) {
   if (logs.length === 0) {
     return (
-      <div className="text-center text-slate-400 py-12">
-        <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+      <div className="py-12 text-center text-[var(--cw-text-muted)]">
+        <FileText className="mx-auto mb-3 h-12 w-12 opacity-50" />
         <p>No logs recorded. Use console.log/info/warn/error or req.clockwork?.info() — both appear here.</p>
       </div>
     );
@@ -225,32 +212,32 @@ function LogsTab({ logs }: { logs: LogData[] }) {
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case 'debug': return 'bg-slate-600 text-slate-200';
-      case 'info': return 'bg-blue-600 text-white';
-      case 'warning': return 'bg-yellow-600 text-white';
-      case 'error': return 'bg-red-600 text-white';
-      default: return 'bg-slate-600 text-slate-200';
+      case 'debug': return 'bg-[var(--cw-border)] text-[var(--cw-text-muted)]';
+      case 'info': return 'bg-[var(--cw-type-badge-bg)] text-[var(--cw-type-badge-text)]';
+      case 'warning': return 'bg-[var(--cw-status-4xx-bg)] text-[var(--cw-status-4xx-text)]';
+      case 'error': return 'bg-[var(--cw-status-5xx-bg)] text-[var(--cw-status-5xx-text)]';
+      default: return 'bg-[var(--cw-border)] text-[var(--cw-text-muted)]';
     }
   };
 
   return (
     <div className="space-y-3">
       {logs.map((log, index) => (
-        <div key={index} className="bg-slate-900 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${getLevelColor(log.level)}`}>
+        <div key={index} className="rounded-lg bg-[var(--cw-panel)] p-4">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className={`rounded px-2 py-1 text-xs font-bold uppercase ${getLevelColor(log.level)}`}>
               {log.level}
             </span>
             {log.source && (
-              <span className={`px-2 py-1 rounded text-xs ${log.source === 'native' ? 'bg-cyan-600/30 text-cyan-200' : 'bg-violet-600/30 text-violet-200'}`}>
+              <span className={`rounded px-2 py-1 text-xs ${log.source === 'native' ? 'bg-cyan-600/30 text-cyan-200' : 'bg-violet-600/30 text-violet-200'}`}>
                 {log.source === 'native' ? 'Console' : 'Clockwork'}
               </span>
             )}
-            <span className="text-xs text-slate-400">{log.time.toFixed(3)}s</span>
+            <span className="text-xs text-[var(--cw-text-muted)]">{log.time.toFixed(3)}s</span>
           </div>
-          <p className="text-white mb-2 whitespace-pre-wrap break-words">{log.message}</p>
+          <p className="mb-2 whitespace-pre-wrap break-words text-[var(--cw-text)]">{log.message}</p>
           {log.context && Object.keys(log.context).length > 0 && (
-            <pre className="bg-slate-950 p-3 rounded-lg text-sm text-slate-300 overflow-x-auto">
+            <pre className="overflow-x-auto rounded border border-[var(--cw-code-border)] bg-[var(--cw-code-bg)] p-3 text-sm text-[var(--cw-text)]">
               {JSON.stringify(log.context, null, 2)}
             </pre>
           )}
@@ -260,13 +247,13 @@ function LogsTab({ logs }: { logs: LogData[] }) {
   );
 }
 
-function PerformanceTab({ events }: { events: EventData[] }) {
+function TimelineTab({ events }: { events: EventData[] }) {
   if (events.length === 0) {
     return (
-      <div className="text-center text-slate-400 py-12">
-        <Zap className="w-12 h-12 mx-auto mb-3 opacity-50 text-blue-500" />
+      <div className="py-12 text-center text-[var(--cw-text-muted)]">
+        <Zap className="mx-auto mb-3 h-12 w-12 opacity-50 text-[var(--cw-accent)]" />
         <p>No timeline events recorded</p>
-        <p className="text-xs mt-2 text-slate-500">Add events via core.addEvent() to see a visual timeline</p>
+        <p className="mt-2 text-xs text-[var(--cw-text-muted)]">Add events via core.addEvent() to see a visual timeline</p>
       </div>
     );
   }
@@ -276,10 +263,10 @@ function PerformanceTab({ events }: { events: EventData[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-slate-900 rounded-lg p-4">
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-blue-400" />
-          Performance timeline
+      <div className="rounded-lg bg-[var(--cw-panel)] p-4">
+        <h3 className="mb-4 flex items-center gap-2 text-[13px] font-semibold text-[var(--cw-text)]">
+          <Clock className="h-5 w-5 text-[var(--cw-accent)]" />
+          Timeline
         </h3>
         <div className="space-y-3">
           {events.map((event, index) => {
@@ -289,28 +276,28 @@ function PerformanceTab({ events }: { events: EventData[] }) {
             const widthPercent = (eventDuration / duration) * 100;
             return (
               <div key={index}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-white">{event.name}</span>
-                  <span className="text-xs text-slate-400">{event.duration?.toFixed(2)}ms</span>
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="text-sm text-[var(--cw-text)]">{event.name}</span>
+                  <span className="text-xs text-[var(--cw-text-muted)]">{event.duration?.toFixed(2)}ms</span>
                 </div>
-                {event.description && <div className="text-xs text-slate-400 mb-1">{event.description}</div>}
-                <div className="h-8 bg-slate-950 rounded-lg relative overflow-hidden">
+                {event.description && <div className="mb-1 text-xs text-[var(--cw-text-muted)]">{event.description}</div>}
+                <div className="relative h-8 overflow-hidden rounded bg-[var(--cw-code-bg)]">
                   <div
-                    className="absolute h-full rounded-lg flex items-center px-2"
+                    className="absolute flex h-full items-center rounded px-2"
                     style={{
                       left: `${startPercent}%`,
                       width: `${Math.max(widthPercent, 1)}%`,
                       minWidth: '2px',
-                      backgroundColor: event.color || '#3b82f6',
+                      backgroundColor: event.color || 'var(--cw-accent)',
                     }}
                   >
                     {widthPercent > 10 && (
-                      <span className="text-xs text-white font-medium truncate">{event.name}</span>
+                      <span className="truncate text-xs font-medium text-white">{event.name}</span>
                     )}
                   </div>
                 </div>
                 {event.data && Object.keys(event.data).length > 0 && (
-                  <pre className="mt-2 bg-slate-950 p-2 rounded text-xs text-slate-300 overflow-x-auto">
+                  <pre className="mt-2 overflow-x-auto rounded border border-[var(--cw-code-border)] bg-[var(--cw-code-bg)] p-2 text-xs text-[var(--cw-text)]">
                     {JSON.stringify(event.data, null, 2)}
                   </pre>
                 )}

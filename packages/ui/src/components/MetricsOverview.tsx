@@ -50,16 +50,16 @@ export function MetricsOverview() {
 
   if (error && !metrics) {
     return (
-      <div className="bg-slate-800 rounded-xl border border-slate-700 p-8 text-center text-slate-400">
+      <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-8 text-center text-[var(--cw-text-muted)]">
         <p>{error}</p>
-        <p className="text-sm mt-2">Ensure the server is running and Clockwork is enabled.</p>
+        <p className="mt-2 text-sm">Ensure the server is running and Clockwork is enabled.</p>
       </div>
     );
   }
 
   if (!metrics) {
     return (
-      <div className="bg-slate-800 rounded-xl border border-slate-700 p-8 text-center text-slate-400">
+      <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-8 text-center text-[var(--cw-text-muted)]">
         Loading metrics…
       </div>
     );
@@ -86,46 +86,46 @@ export function MetricsOverview() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-slate-800 rounded-xl border border-slate-700 p-4 flex items-center gap-3">
-          <div className="p-2 bg-amber-600/20 rounded-lg">
-            <Cpu className="w-5 h-5 text-amber-400" />
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="flex items-center gap-3 rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
+          <div className="rounded-lg bg-amber-600/20 p-2">
+            <Cpu className="h-5 w-5 text-amber-500" />
           </div>
           <div>
-            <p className="text-xs text-slate-400 uppercase tracking-wide">CPU</p>
-            <p className="text-lg font-semibold text-white">{os?.cpu != null ? `${os.cpu.toFixed(1)}%` : '—'}</p>
+            <p className="text-xs uppercase tracking-wide text-[var(--cw-text-muted)]">CPU</p>
+            <p className="text-lg font-semibold text-[var(--cw-text)]">{os?.cpu != null ? `${os.cpu.toFixed(1)}%` : '—'}</p>
           </div>
         </div>
-        <div className="bg-slate-800 rounded-xl border border-slate-700 p-4 flex items-center gap-3">
-          <div className="p-2 bg-emerald-600/20 rounded-lg">
-            <HardDrive className="w-5 h-5 text-emerald-400" />
+        <div className="flex items-center gap-3 rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
+          <div className="rounded-lg bg-emerald-600/20 p-2">
+            <HardDrive className="h-5 w-5 text-emerald-500" />
           </div>
           <div>
-            <p className="text-xs text-slate-400 uppercase tracking-wide">Memory</p>
-            <p className="text-lg font-semibold text-white">
+            <p className="text-xs uppercase tracking-wide text-[var(--cw-text-muted)]">Memory</p>
+            <p className="text-lg font-semibold text-[var(--cw-text)]">
               {os?.memory != null ? `${os.memory.toFixed(1)}%` : '—'}
             </p>
-            <p className="text-xs text-slate-400">{os?.heapUsed != null ? formatBytes(os.heapUsed) : '—'}</p>
+            <p className="text-xs text-[var(--cw-text-muted)]">{os?.heapUsed != null ? formatBytes(os.heapUsed) : '—'}</p>
           </div>
         </div>
-        <div className="bg-slate-800 rounded-xl border border-slate-700 p-4 flex items-center gap-3">
-          <div className="p-2 bg-blue-600/20 rounded-lg">
-            <Timer className="w-5 h-5 text-blue-400" />
+        <div className="flex items-center gap-3 rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
+          <div className="rounded-lg bg-blue-600/20 p-2">
+            <Timer className="h-5 w-5 text-blue-500" />
           </div>
           <div>
-            <p className="text-xs text-slate-400 uppercase tracking-wide">Event loop</p>
-            <p className="text-lg font-semibold text-white">
+            <p className="text-xs uppercase tracking-wide text-[var(--cw-text-muted)]">Event loop</p>
+            <p className="text-lg font-semibold text-[var(--cw-text)]">
               {processInfo?.eventLoopDelay != null ? `${Math.round(processInfo.eventLoopDelay)} ms` : '—'}
             </p>
           </div>
         </div>
-        <div className="bg-slate-800 rounded-xl border border-slate-700 p-4 flex items-center gap-3">
-          <div className="p-2 bg-violet-600/20 rounded-lg">
-            <Activity className="w-5 h-5 text-violet-400" />
+        <div className="flex items-center gap-3 rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
+          <div className="rounded-lg bg-violet-600/20 p-2">
+            <Activity className="h-5 w-5 text-violet-500" />
           </div>
           <div>
-            <p className="text-xs text-slate-400 uppercase tracking-wide">Uptime</p>
-            <p className="text-lg font-semibold text-white">
+            <p className="text-xs uppercase tracking-wide text-[var(--cw-text-muted)]">Uptime</p>
+            <p className="text-lg font-semibold text-[var(--cw-text)]">
               {processInfo?.uptime != null ? formatUptime(processInfo.uptime) : '—'}
             </p>
           </div>
@@ -133,10 +133,10 @@ export function MetricsOverview() {
       </div>
 
       {chartData.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-slate-800 rounded-xl border border-slate-700 p-4">
-            <h3 className="text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" /> Response time (ms) — {span.interval}s span
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-[var(--cw-text)]">
+              <BarChart3 className="h-4 w-4" /> Response time (ms) — {span.interval}s span
             </h3>
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
@@ -167,9 +167,9 @@ export function MetricsOverview() {
               </ResponsiveContainer>
             </div>
           </div>
-          <div className="bg-slate-800 rounded-xl border border-slate-700 p-4">
-            <h3 className="text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
-              <Activity className="w-4 h-4" /> Requests per second
+          <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-[var(--cw-text)]">
+              <Activity className="h-4 w-4" /> Requests per second
             </h3>
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
@@ -190,22 +190,22 @@ export function MetricsOverview() {
       )}
 
       {Object.keys(statusTotals).length > 0 && (
-        <div className="bg-slate-800 rounded-xl border border-slate-700 p-4">
-          <h3 className="text-sm font-medium text-slate-300 mb-3">Status codes (recent)</h3>
+        <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
+          <h3 className="mb-3 text-sm font-medium text-[var(--cw-text)]">Status codes (recent)</h3>
           <div className="flex flex-wrap gap-4">
             {Object.entries(statusTotals).map(([bucket, count]) => (
               <div key={bucket} className="flex items-center gap-2">
                 <span
-                  className={`px-2 py-1 rounded text-sm font-medium ${
-                    bucket === '2xx' ? 'bg-green-600/30 text-green-300'
-                      : bucket === '3xx' ? 'bg-blue-600/30 text-blue-300'
-                      : bucket === '4xx' ? 'bg-yellow-600/30 text-yellow-300'
-                      : 'bg-red-600/30 text-red-300'
+                  className={`rounded px-2 py-1 text-sm font-medium ${
+                    bucket === '2xx' ? 'bg-green-600/30 text-green-400'
+                      : bucket === '3xx' ? 'bg-blue-600/30 text-blue-400'
+                      : bucket === '4xx' ? 'bg-yellow-600/30 text-yellow-400'
+                      : 'bg-red-600/30 text-red-400'
                   }`}
                 >
                   {bucket}
                 </span>
-                <span className="text-slate-400">{count}</span>
+                <span className="text-[var(--cw-text-muted)]">{count}</span>
               </div>
             ))}
           </div>
@@ -213,23 +213,23 @@ export function MetricsOverview() {
       )}
 
       {metrics.healthChecks && metrics.healthChecks.length > 0 && (
-        <div className="bg-slate-800 rounded-xl border border-slate-700 p-4">
-          <h3 className="text-sm font-medium text-slate-300 mb-3">Health checks</h3>
+        <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
+          <h3 className="mb-3 text-sm font-medium text-[var(--cw-text)]">Health checks</h3>
           <div className="space-y-2">
             {metrics.healthChecks.map((check, i) => (
-              <div key={i} className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-700/50">
+              <div key={i} className="flex items-center justify-between rounded-lg bg-[var(--cw-border)]/50 px-3 py-2">
                 <div className="flex items-center gap-2">
                   {check.status === 'ok' ? (
-                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    <CheckCircle className="h-4 w-4 text-green-500" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-red-400" />
+                    <XCircle className="h-4 w-4 text-red-500" />
                   )}
-                  <span className="text-slate-200 font-mono text-sm">{check.name || check.path}</span>
+                  <span className="font-mono text-sm text-[var(--cw-text)]">{check.name || check.path}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
-                  {check.duration != null && <span className="text-slate-400">{check.duration} ms</span>}
-                  {check.statusCode != null && <span className="text-slate-400">HTTP {check.statusCode}</span>}
-                  {check.error && <span className="text-red-400">{check.error}</span>}
+                  {check.duration != null && <span className="text-[var(--cw-text-muted)]">{check.duration} ms</span>}
+                  {check.statusCode != null && <span className="text-[var(--cw-text-muted)]">HTTP {check.statusCode}</span>}
+                  {check.error && <span className="text-red-500">{check.error}</span>}
                 </div>
               </div>
             ))}
@@ -238,7 +238,7 @@ export function MetricsOverview() {
       )}
 
       {chartData.length === 0 && !os && !processInfo && Object.keys(statusTotals).length === 0 && (
-        <div className="bg-slate-800 rounded-xl border border-slate-700 p-8 text-center text-slate-400">
+        <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-8 text-center text-[var(--cw-text-muted)]">
           <p>No metrics data yet. Request data is collected per-request; aggregate metrics can be added via plugins.</p>
         </div>
       )}

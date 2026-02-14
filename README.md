@@ -214,6 +214,12 @@ clockwork.registerPlugin(pgPlugin);
 
 ---
 
+## Dashboard
+
+The built-in UI at `{path}/app` is aligned with [Clockwork](https://underground.works/clockwork/) (PHP): requests list, request detail with **Request**, **Log**, **Database**, and **Timeline** tabs. Override the base path with the `path` option (default `/__clockwork`).
+
+---
+
 - **Build:** `npm run build` → packages → UI → root bundle → copy UI to `dist/public`.
 - **Packages:** Plugins live under `packages/`: `clockwork-plugins` (context, console, process-errors, getDefaultPlugins), `clockwork-log-interceptor` (pino, winston), `clockwork-db-interceptor` (pg, mysql2). Root depends on `clockwork-plugins`, which aggregates the others.
 - **Scripts:** `build`, `dev:example`, `dev:ui`, `test`, `clean`, `version` (changesets), `release`.

@@ -1,7 +1,7 @@
 import { RequestData, ClockworkMetadata, MetricsSnapshot } from '../types/clockwork';
 
 const API_BASE = typeof window !== 'undefined'
-  ? (import.meta.env.VITE_CLOCKWORK_API_BASE ?? '/__clockwork')
+  ? (import.meta.env.CLOCKWORK_PATH ?? '/__clockwork')
   : '';
 
 export const api = {
