@@ -1,6 +1,6 @@
 {
   "name": "@adjedaini/clockwork-node",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Clockwork Node — framework-agnostic debugging, profiling & metrics for Node.js backends",
   "private": false,
   "type": "module",
