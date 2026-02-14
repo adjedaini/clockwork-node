@@ -28,6 +28,10 @@
   --cw-panel-shadow: none;
   --cw-code-bg: #252527;
   --cw-code-border: #15151e;
+  --cw-chart-grid: #334155;
+  --cw-chart-text: #64748b;
+  --cw-chart-tooltip-bg: #1e293b;
+  --cw-chart-tooltip-border: #334155;
 }
 
 /* Light theme – enhanced contrast and polish */
@@ -53,6 +57,10 @@
   --cw-panel-shadow: 0 1px 2px hsl(220deg 10% 92%);
   --cw-code-bg: hsl(220deg 14% 94%);
   --cw-code-border: hsl(220deg 14% 82%);
+  --cw-chart-grid: hsl(220deg 14% 85%);
+  --cw-chart-text: hsl(220deg 10% 45%);
+  --cw-chart-tooltip-bg: hsl(220deg 14% 98%);
+  --cw-chart-tooltip-border: hsl(220deg 14% 88%);
 }
 
 html {

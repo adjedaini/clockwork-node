@@ -7,12 +7,12 @@ export default defineConfig({
   outDir: 'dist',
   clean: false,
   noExternal: [
-    '@adjedaini/clockwork-core',
     '@adjedaini/clockwork-transport-http',
     '@adjedaini/clockwork-shared',
   ],
-  // Keep plugin packages external so Node loads them at runtime (they use require('async_hooks') etc., which fails when inlined into ESM).
+  // Keep core, plugin packages external (require('node:os'), async_hooks etc. fail when inlined).
   external: [
+    '@adjedaini/clockwork-core',
     '@adjedaini/clockwork-plugins',
     '@adjedaini/clockwork-db-interceptor',
     '@adjedaini/clockwork-log-interceptor',

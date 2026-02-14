@@ -66,12 +66,22 @@ export function MetricsOverview() {
   }
 
   const spans = metrics.spans ?? [];
-  const span = spans[0] ?? { responseTime: [], rps: [], statusCodes: [], interval: 1 };
-  const chartData = span.responseTime.map((rt, i) => ({
-    index: i,
-    responseTime: Math.round(rt),
-    rps: span.rps[i] != null ? Math.round(span.rps[i] * 10) / 10 : 0,
-  }));
+  const span = spans[0] ?? { responseTime: [], rps: [], statusCodes: [], interval: 10 };
+  const interval = span.interval ?? 10;
+  const chartData = span.responseTime.map((rt, i) => {
+    const secAgo = i === span.responseTime.length - 1 ? 0 : (span.responseTime.length - i) * interval;
+    return {
+      index: i,
+      label: secAgo === 0 ? 'now' : `${secAgo}s ago`,
+      responseTime: Math.round(rt),
+      rps: span.rps[i] != null ? Math.round(span.rps[i] * 10) / 10 : 0,
+    };
+  });
+
+  const totalRequests = span.rps?.reduce((a, b) => a + b, 0) ?? 0;
+  const totalResponseTimeMs = chartData.reduce((a, d) => a + d.responseTime * d.rps, 0);
+  const avgResponseTime = totalRequests > 0 ? Math.round(totalResponseTimeMs / totalRequests) : 0;
+  const peakRps = chartData.length > 0 ? Math.max(...chartData.map((d) => d.rps), 0) : 0;
 
   const statusCodeData = span.statusCodes?.length
     ? span.statusCodes.flatMap((sc) => Object.entries(sc).map(([bucket, count]) => ({ bucket, count })))
@@ -133,60 +143,92 @@ export function MetricsOverview() {
       </div>
 
       {chartData.length > 0 && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-[var(--cw-text)]">
-              <BarChart3 className="h-4 w-4" /> Response time (ms) — {span.interval}s span
-            </h3>
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorResponseTime" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis dataKey="index" stroke="#64748b" tick={{ fontSize: 10 }} />
-                  <YAxis stroke="#64748b" tick={{ fontSize: 10 }} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}
-                    labelStyle={{ color: '#94a3b8' }}
-                    formatter={(value: number) => [value, 'Response time (ms)']}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="responseTime"
-                    stroke="#8b5cf6"
-                    fillOpacity={1}
-                    fill="url(#colorResponseTime)"
-                    name="Response time (ms)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+        <>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
+              <p className="text-xs uppercase tracking-wide text-[var(--cw-text-muted)]">Avg response time</p>
+              <p className="text-xl font-semibold text-[var(--cw-text)]">{avgResponseTime} ms</p>
+              <p className="mt-0.5 text-xs text-[var(--cw-text-muted)]">Last 60 seconds</p>
+            </div>
+            <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
+              <p className="text-xs uppercase tracking-wide text-[var(--cw-text-muted)]">Peak throughput</p>
+              <p className="text-xl font-semibold text-[var(--cw-text)]">{peakRps.toFixed(1)} req/s</p>
+              <p className="mt-0.5 text-xs text-[var(--cw-text-muted)]">Last 60 seconds</p>
+            </div>
+            <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
+              <p className="text-xs uppercase tracking-wide text-[var(--cw-text-muted)]">Total requests</p>
+              <p className="text-xl font-semibold text-[var(--cw-text)]">{Math.round(totalRequests)}</p>
+              <p className="mt-0.5 text-xs text-[var(--cw-text-muted)]">Last 60 seconds</p>
             </div>
           </div>
-          <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-[var(--cw-text)]">
-              <Activity className="h-4 w-4" /> Requests per second
-            </h3>
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis dataKey="index" stroke="#64748b" tick={{ fontSize: 10 }} />
-                  <YAxis stroke="#64748b" tick={{ fontSize: 10 }} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}
-                    formatter={(value: number) => [value, 'RPS']}
-                  />
-                  <Line type="monotone" dataKey="rps" stroke="#10b981" strokeWidth={2} dot={false} name="RPS" />
-                </LineChart>
-              </ResponsiveContainer>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-[var(--cw-text)]">
+                <BarChart3 className="h-4 w-4" /> Response time
+              </h3>
+              <div className="h-44">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorResponseTime" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--cw-accent)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="var(--cw-accent)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--cw-chart-grid)" />
+                    <XAxis dataKey="label" stroke="var(--cw-chart-text)" tick={{ fontSize: 10 }} />
+                    <YAxis stroke="var(--cw-chart-text)" tick={{ fontSize: 10 }} unit=" ms" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--cw-chart-tooltip-bg)',
+                        border: '1px solid var(--cw-chart-tooltip-border)',
+                      }}
+                      labelStyle={{ color: 'var(--cw-text-muted)' }}
+                      formatter={(value: number) => [value, 'Response time (ms)']}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="responseTime"
+                      stroke="var(--cw-accent)"
+                      fillOpacity={1}
+                      fill="url(#colorResponseTime)"
+                      name="Response time (ms)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            <div className="rounded-xl border border-[var(--cw-border)] bg-[var(--cw-panel)] p-4">
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-[var(--cw-text)]">
+                <Activity className="h-4 w-4" /> Throughput
+              </h3>
+              <div className="h-44">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--cw-chart-grid)" />
+                    <XAxis dataKey="label" stroke="var(--cw-chart-text)" tick={{ fontSize: 10 }} />
+                    <YAxis stroke="var(--cw-chart-text)" tick={{ fontSize: 10 }} unit=" req/s" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--cw-chart-tooltip-bg)',
+                        border: '1px solid var(--cw-chart-tooltip-border)',
+                      }}
+                      formatter={(value: number) => [value, 'Requests/s']}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="rps"
+                      stroke="var(--cw-accent)"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Requests/s"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {Object.keys(statusTotals).length > 0 && (
