@@ -21,9 +21,11 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Lint
+      - name: Build packages
+        run: npm run build:packages
+
+      - name: Type check
         run: npx tsc --noEmit
-        continue-on-error: true
 
       - name: Build
         run: npm run build
